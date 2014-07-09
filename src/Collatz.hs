@@ -1,28 +1,26 @@
 module Collatz (runCollatz) where
 
+    import Control.Monad
     import Control.Monad.State
     import Control.Monad.Writer
     import Control.Monad.Identity
 
-    type Collatz = StateT Int (Writer [Int])
+    type Collatz = StateT Int (WriterT [Int] Identity)
 
-    tick :: Collatz ()
-    tick = do n <- get
-              put (n+1)
+    tickTell :: Int -> Collatz ()
+    tickTell m  = do lift $ tell [m]
+                     n <- get
+                     put (n+1)
 
     step :: Int -> Collatz Int
-    step n | even n    = do tick
-                            return (n `div` 2)
-           | otherwise = do tick
-                            return (3*n + 1)
+    step n = return $ if even n
+        then n `div` 2
+        else 3*n + 1
 
-    collatz :: Int -> Collatz Int
-    collatz  n | n == 1 = do lift $ tell [n]
-                             return n
-               | otherwise = do lift $ tell [n]
-                                n' <- step n
-                                collatz n'
+    collatz :: Int -> Collatz ()
+    collatz n = do tickTell n
+                   unless (n == 1) (collatz <=< step $ n)
 
+    runCollatz :: Int -> (Int, [Int])
+    runCollatz n = runIdentity . runWriterT . execStateT (collatz n) $ 0
 
-    runCollatz :: Int -> [Int]
-    runCollatz n = execWriter . runStateT (collatz n) $ 0

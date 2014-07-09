@@ -6,7 +6,9 @@ module Main where
     main = do
         putStrLn "Give me an Integer!"
         n <- fmap read getLine
-        putStrLn . pretty . runCollatz $ n
+        (m, ms) <- return (runCollatz n)
+        putStrLn . pretty $ ms
+        putStrLn ("The sequence is " ++ show m ++ " terms long!")
 
     pretty :: [Int] -> String
     pretty = foldr (\n s-> show n ++ "\n" ++ s ) ""
