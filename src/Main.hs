@@ -1,8 +1,14 @@
--- | Main entry point to the application.
 module Main where
 
--- | The main entry point.
-main :: IO ()
-main = do
-    putStrLn "Welcome to FP Haskell Center!"
-    putStrLn "Have a good day!"
+    import Collatz
+
+    main :: IO ()
+    main = do
+        putStrLn "Give me an Integer!"
+        n <- fmap read getLine
+        putStrLn $ (pretty . runCollatz $ n)
+
+    pretty :: [Int] -> String
+    pretty [] = ""
+    pretty (n:ns) = show n ++ "\n" ++ pretty ns
+
